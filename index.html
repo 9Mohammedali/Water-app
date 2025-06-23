@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="نظام احترافي لإدارة فواتير واشتراكات مشاريع المياه.">
+    <title>النظام الاحترافي لإدارة مشروع المياه</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💧</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        /* =================================================================== */
+        /* ملف الأنماط الكامل بالهوية البصرية الجديدة               */
+        /* =================================================================== */
+
+        :root {
+            --primary-green: #27ae60;
+            --secondary-green: #2ecc71;
+            --dark-bg: #1e272e;
+            --light-bg: #f5f6fa;
+            --text-color-dark: #303952;
+            --text-color-light: #d2dae2;
+            --white-color: #ffffff;
+            --grey-color: #7f8c8d;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --info-color: #3498db;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color-dark);
+            padding-bottom: 70px; /* For bottom nav */
+        }
+        
+        /* ----------------------- الهيكل العام ----------------------- */
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .top-header {
+            background-color: var(--dark-bg);
+            color: var(--white-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            height: 60px;
+            position: sticky; /* Keep header visible on scroll */
+            top: 0;
+            z-index: 1001; /* Above page content but below modals */
+        }
+        .top-header .logo {
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--white-color);
+        }
+        .top-header .logo i {
+            color: var(--secondary-green);
+        }
+        .top-header h4 {
+            font-weight: 500;
+        }
+
+        /* حاوية الصفحات */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-content {
+            padding: 20px;
+        }
+        .page-title {
+            font-size: 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ----------------------- الشريط السفلي للتنقل ----------------------- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background-color: var(--white-color);
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            color: var(--grey-color);
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+            padding: 5px 0; /* Add some padding */
+        }
+        .nav-item i {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+        .nav-item span {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .nav-item.active {
+            color: var(--primary-green);
+        }
+        .nav-item#nav-add-subscriber { /* This specific ID for the middle button */
+            transform: translateY(-15px);
+        }
+        .nav-item#nav-add-subscriber i {
+            background-color: var(--primary-green);
+            color: var(--white-color);
+            font-size: 24px;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+        }
+        .nav-item#nav-add-subscriber span {
+            transform: translateY(10px); /* Adjust text position below the button */
+        }
+
+        /* ----------------------- تصميم المكونات والبطاقات ----------------------- */
+        .card {
+            background-color: var(--white-color);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--light-bg);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card .stat-icon {
+            font-size: 24px;
+            color: var(--primary-green);
+            margin-bottom: 8px;
+        }
+        .stat-card h5 {
+            font-size: 14px;
+            color: var(--grey-color);
+            margin-bottom: 5px;
+        }
+        .stat-card p {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-color-dark);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Tajawal', sans-serif;
+            background-color: #fdfdfd; /* Slightly off-white for inputs */
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.2);
+        }
+        .form-group small {
+            font-size: 12px;
+            color: var(--grey-color);
+            margin-top: 5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:active {
+            transform: scale(0.98); /* Click effect */
+        }
+        .btn-primary {
+            background-color: var(--primary-green);
+            color: var(--white-color);
+        }
+        .btn-primary:hover {
+            background-color: #219d55; /* Darker shade for hover */
+        }
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: var(--white-color);
+        }
+         .btn-danger:hover {
+            background-color: #c0392b; /* Darker shade for hover */
+        }
+        .btn-secondary {
+            background-color: var(--grey-color);
+            color: var(--white-color);
+        }
+        .btn-secondary:hover {
+            background-color: #6c7a7b; /* Darker shade for hover */
+        }
+         .btn-info {
+            background-color: var(--info-color);
+            color: var(--white-color);
+        }
+        .btn-info:hover {
+            background-color: #2980b9; 
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 14px;
+            width: auto;
+        }
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--grey-color);
+            cursor: pointer;
+            padding: 5px;
+            font-size: 18px;
+            transition: color 0.2s;
+        }
+        .btn-icon:hover {
+            color: var(--primary-green);
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 20px; /* Right padding for icon */
+            border: 1px solid #ddd;
+            border-radius: 25px; /* Pill shape */
+            font-size: 16px;
+        }
+        .search-box .fa-search {
+            position: absolute;
+            top: 50%;
+            right: 20px; /* Adjusted from left for RTL */
+            transform: translateY(-50%);
+            color: var(--grey-color);
+        }
+
+        /* تنسيق الجداول */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 12px 8px;
+            text-align: right;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+        thead th {
+            font-weight: 700;
+            color: var(--text-color-dark);
+            font-size: 13px;
+            background-color: var(--light-bg);
+            white-space: nowrap;
+        }
+        tbody tr:not(.no-hover):hover {
+             background-color: #f5f5f5; 
+        }
+        td.actions-cell {
+            text-align: center;
+            white-space: nowrap;
+        }
+        td.actions-cell .btn-icon {
+            margin: 0 4px;
+        }
+        th.checkbox-column, td.checkbox-column {
+            width: 40px;
+            text-align: center;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            min-width: 75px;
+            text-align: center;
+        }
+        .status-paid { background-color: var(--primary-green); }
+        .status-unpaid { background-color: var(--danger-color); }
+        .status-partial { background-color: var(--warning-color); color: var(--text-color-dark); }
+
+
+        .settings-list .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background-color: var(--white-color);
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+         .settings-list .setting-item:hover {
+            background-color: #f9f9f9;
+        }
+        .settings-list .setting-item .info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .settings-list .setting-item i {
+            font-size: 20px;
+            color: var(--primary-green);
+        }
+        .settings-list .setting-item .fa-chevron-left {
+             color: var(--grey-color);
+        }
+        
+        .details-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--grey-color);
+            background-color: var(--light-bg);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .no-data i {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            z-index: 2000;
+            display: none; 
+            align-items: center;
+            justify-content: center;
+            animation: fadeInModal 0.3s ease-out;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--white-color);
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transform: scale(0.95);
+            animation: scaleUpModal 0.3s ease-out forwards;
+            margin: auto;
+        }
+
+        @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUpModal { from { opacity: 0.5; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        .modal-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .modal-buttons .btn {
+            width: auto;
+            padding: 10px 25px;
+            font-size: 16px;
+        }
+
+        /* Notification container */
+        #notification-container {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3000;
+            width: auto;
+            max-width: calc(100% - 40px);
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Specific page adjustments */
+        #print-selected-invoices-btn {
+            margin-bottom: 0;
+        }
+        .report-form-container {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .report-form-container .form-group {
+            flex-grow: 1;
+            margin-bottom: 0;
+        }
+        .report-form-container .btn {
+            width: auto; 
+            padding: 12px 20px;
+            flex-shrink: 0;
+        }
+        #monthly-report-results table {
+            margin-top: 20px;
+        }
+        #monthly-report-results th {
+            background-color: #f0f0f0;
+            color: var(--text-color-dark);
+            font-weight: 700;
+        }
+        #monthly-report-results td {
+            font-weight: 500;
+        }
+        #monthly-report-results .total-row td, #monthly-report-results .net-profit-row td {
+            font-weight: 700;
+            color: var(--primary-green);
+            border-top: 2px solid var(--primary-green);
+        }
+        #monthly-report-results .net-loss-row td {
+            font-weight: 700;
+            color: var(--danger-color);
+            border-top: 2px solid var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="top-header">
+            <a href="#" class="logo" data-page="page-home"><i class="fas fa-tint"></i></a>
+            <h4 id="project-name-header">اسم المشروع</h4>
+        </header>
+
+        <main>
+            <div id="page-home" class="page active" data-page-id="home">
+                <div class="page-content">
+                    <div class="stats-grid" id="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                            <h5>إجمالي المشتركين</h5>
+                            <p id="stat-total-subscribers">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                            <h5>إجمالي المستحقات</h5>
+                            <p id="stat-total-due">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                            <h5>رصيد الصندوق</h5>
+                            <p id="stat-project-balance">0</p>
+                        </div>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="ابحث عن مشترك بالاسم أو رقم العداد..." aria-label="بحث عن مشترك">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h2 class="page-title" style="margin: 0;"><i class="fas fa-users"></i> سجل المشتركين</h2>
+                            <div style="display: flex; gap: 10px;">
+    <button id="bulk-print-btn" class="btn btn-info btn-sm"><i class="fas fa-print"></i> طباعة أحدث الفواتير</button>
+    <button id="print-selected-invoices-btn" class="btn btn-secondary btn-sm" style="display: none;"><i class="fas fa-check-double"></i> طباعة المحدد</button>
+</div>
+
+                        </div>
+                        <div class="table-wrapper">
+                            <table id="subscribers-table">
+                                <thead>
+                                    <tr>
+                                        <th class="checkbox-column"><input type="checkbox" id="select-all-subscribers" aria-label="تحديد الكل"></th>
+                                        <th>اسم المشترك</th>
+                                        <th>المستحقات</th>
+                                        <th>آخر قراءة</th>
+                                        <th>الحالة</th>
+                                        <th style="text-align: center;">إجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    </tbody>
+                            </table>
+                            <div id="home-no-data" class="no-data">
+                                <i class="fas fa-user-plus"></i><p>لم تقم بإضافة أي مشترك بعد. <br>اضغط على زر الإضافة (+) للبدء.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-add-subscriber" class="page" data-page-id="add-subscriber">
+                <div class="page-content">
+                    <div class="card">
+                        <h2 class="page-title"><i class="fas fa-user-plus"></i> إضافة مشترك جديد</h2>
+                        <form id="add-subscriber-form" aria-labelledby="add-subscriber-title">
+                            <div class="form-group">
+                                <label for="subscriber-name">اسم المشترك</label>
+                                <input type="text" id="subscriber-name" name="name" placeholder="أدخل الاسم كاملاً" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="initial-reading">القراءة الأولية للعداد</label>
+                                <input type="number" id="initial-reading" name="initialReading" placeholder="0" required min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="opening-balance">الرصيد الافتتاحي (المتأخرات)</label>
+                                <input type="number" id="opening-balance" name="openingBalance" placeholder="0" value="0" required>
+                                <small>أدخل مبلغاً موجباً إذا كان المشترك مديناً، أو سالباً إذا كان له رصيد دائن.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> تأكيد الإضافة</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="page-subscriber-details" class="page" data-page-id="subscriber-details">
+                <div class="page-content" id="subscriber-details-content">
+                    </div>
+            </div>
+
+            <div id="page-ledger" class="page" data-page-id="ledger">
+                <div class="page-content">
+                    <h2 class="page-title"><i class="fas fa-cash-register"></i> السجل المالي العام</h2>
+                     <div class="card">
+                        <div class="table-wrapper">
+                            <table id="financial-ledger-table">
+                                <thead>
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>البيان</th>
+                                        <th>الوصف</th>
+                                        <th>مدين</th>
+                                        <th>دائن</th>
+                                        <th>الرصيد</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                             <div id="ledger-no-data" class="no-data">
+                                <i class="fas fa-file-invoice-dollar"></i><p>لا توجد سجلات مالية لعرضها.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-monthly-reports" class="page" data-page-id="reports">
+                <div class="page-content">
+                    <h2 class="page-title"><i class="fas fa-chart-line"></i> التقارير المالية الشهرية</h2>
+                    <div class="card">
+                        <div class="report-form-container">
+                            <div class="form-group">
+                                <label for="report-month">الشهر:</label>
+                                <select id="report-month" name="month">
+                                    <option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option><option value="4">أبريل</option><option value="5">مايو</option><option value="6">يونيو</option><option value="7">يوليو</option><option value="8">أغسطس</option><option value="9">سبتمبر</option><option value="10">أكتوبر</option><option value="11">نوفمبر</option><option value="12">ديسمبر</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="report-year">السنة:</label>
+                                <select id="report-year" name="year"></select>
+                            </div>
+                            <button id="generate-report-btn" class="btn btn-primary"><i class="fas fa-play"></i> عرض التقرير</button>
+                        </div>
+                        <div id="monthly-report-results">
+                            </div>
+                         <div id="report-no-data" class="no-data">
+                            <i class="fas fa-search-dollar"></i><p>اختر الفترة الزمنية لعرض التقرير.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-settings" class="page" data-page-id="settings">
+                <div class="page-content">
+                    <h2 class="page-title"><i class="fas fa-cog"></i> الإعدادات العامة</h2>
+                    <div class="card">
+                        <form id="settings-form">
+                            <div class="form-group">
+                                <label for="setting-project-name">اسم المشروع/المؤسسة</label>
+                                <input type="text" id="setting-project-name" name="projectName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="setting-price">سعر الوحدة</label>
+                                <input type="number" id="setting-price" name="unitPrice" required min="0" step="any">
+                            </div>
+                             <div class="form-group">
+                                <label for="setting-currency">العملة</label>
+                                <input type="text" id="setting-currency" name="currency" value="ريال" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ التغييرات</button>
+                        </form>
+                    </div>
+                     <h2 class="page-title" style="margin-top: 30px;"><i class="fas fa-database"></i> إدارة البيانات والعمليات</h2>
+                    <div class="settings-list">
+                        <button class="setting-item" id="export-data-btn">
+                           <div class="info"><i class="fas fa-download"></i><span>تصدير البيانات (نسخ احتياطي)</span></div>
+                           <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="setting-item" id="import-data-btn">
+                           <div class="info"><i class="fas fa-upload"></i><span>استيراد البيانات (استعادة)</span></div>
+                           <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <input type="file" id="import-file-input" accept=".json" style="display: none;">
+
+                         <button class="setting-item" id="settle-dues-btn">
+                           <div class="info"><i class="fas fa-hand-holding-usd"></i><span>تسوية مستحقات المشتركين</span></div>
+                           <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="setting-item" id="record-owner-withdrawal-btn">
+                           <div class="info"><i class="fas fa-money-bill-wave"></i><span>تسجيل سحب للمالك</span></div>
+                           <i class="fas fa-chevron-left"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <nav class="bottom-nav">
+        <div class="nav-item active" data-page="page-home" role="button"><i class="fas fa-home"></i><span>الرئيسية</span></div>
+        <div class="nav-item" data-page="page-ledger" role="button"><i class="fas fa-history"></i><span>السجل</span></div>
+        <div class="nav-item" id="nav-add-subscriber" data-page="page-add-subscriber" role="button"><i class="fas fa-plus"></i><span>إضافة</span></div>
+        <div class="nav-item" data-page="page-monthly-reports" role="button"><i class="fas fa-chart-pie"></i><span>التقارير</span></div>
+        <div class="nav-item" data-page="page-settings" role="button"><i class="fas fa-cog"></i><span>الإعدادات</span></div>
+    </nav>
+    
+    <div id="notification-container" aria-live="assertive" aria-atomic="true"></div>
+    
+    <div id="confirm-modal" class="modal-overlay" role="alertdialog">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modal-title-text">هل أنت متأكد؟</h3>
+            <p id="modal-body-text">لا يمكن التراجع عن هذا الإجراء.</p>
+            <div class="modal-buttons">
+                <button id="modal-cancel-btn" class="btn btn-secondary">إلغاء</button>
+                <button id="modal-confirm-btn" class="btn btn-danger" data-action="" data-id="">تأكيد</button>
+            </div>
+        </div>
+    </div>
+
+    <template id="subscriber-row-template">
+        <tr>
+            <td class="checkbox-column"><input type="checkbox" class="subscriber-checkbox" aria-label="تحديد المشترك"></td>
+            <td data-label="اسم المشترك">
+                <a href="#" class="view-details-link" style="color: var(--text-color-dark); text-decoration: none; font-weight: 500;"></a>
+            </td>
+            <td data-label="المستحقات"></td>
+            <td data-label="آخر قراءة"></td>
+            <td data-label="الحالة"><span class="status-badge"></span></td>
+            <td class="actions-cell">
+                <button class="btn-icon view-details-btn" title="عرض التفاصيل"><i class="fas fa-eye"></i></button>
+                <button class="btn-icon add-invoice-btn" title="إصدار فاتورة"><i class="fas fa-file-invoice"></i></button>
+                <button class="btn-icon record-payment-btn" title="تسجيل دفعة"><i class="fas fa-dollar-sign"></i></button>
+            </td>
+        </tr>
+    </template>
+
+    <template id="ledger-row-template">
+        <tr>
+            <td data-label="التاريخ"></td>
+            <td data-label="البيان"></td>
+            <td data-label="الوصف"></td>
+            <td data-label="مدين"></td>
+            <td data-label="دائن"></td>
+            <td data-label="الرصيد"></td>
+        </tr>
+    </template>
+
+        <script type="module" src="main.js"></script>
+</body>
+</html>
+
+</body>
+</html>
